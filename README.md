@@ -68,4 +68,5 @@ In the terminal, ensuring that ```(.venv)``` is present in the prompt, run the f
     - `Hub`: `assign_attraction`, `assign_population`, `get_hub_id`, etc.
     - `Airport`:  `get_hub_id` (IATA or ICAO), `get_airport_type`
     - `Seaport`: `get_hub_id` (UN/LOCODE), `get_pmo`, `get_seaport_type`
-- [ ] `RadiationModel` to use pre-computed distance matrix from `Network` or its children + vectorized operations for its calculations
+- [ ] `Radiation` to use pre-computed distance matrix from `Network` or its children + vectorized operations for its calculations
+- [ ] Update UML diagram to reflect new `Network` classes and revisions to `Hub` and `Radiation` classes
