@@ -35,7 +35,7 @@ class SeaNetwork(Network):
         """
         shortest = Seaport.maritime_route(hub1.lon, hub1.lat, hub2.lon, hub2.lat, self.vis_graph)
         segment_distances = [
-            Hub.haversine_m(
+            Network.haversine_m(
                 shortest[i][0], shortest[i][1], 
                 shortest[i+1][0], shortest[i+1][1]
             ) 
@@ -59,7 +59,7 @@ class SeaNetwork(Network):
 
     def compute_graph_distances(self):
         """Assigns distances as weights to the edges of the graph."""
-        distances = {(u, v): Hub.haversine_m(u[0], u[1], v[0], v[1]) for u, v in self.graph.edges}
+        distances = {(u, v): Network.haversine_m(u[0], u[1], v[0], v[1]) for u, v in self.graph.edges}
 
         nx.set_edge_attributes(self.graph, distances, "distance_m")
 

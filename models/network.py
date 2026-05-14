@@ -2,6 +2,7 @@ from models.hub import Hub
 import networkx as nx
 import numpy as np
 from shapely import LineString
+from pyproj import Geod
 from typing import Iterable
 
 class Network():
@@ -15,6 +16,7 @@ class Network():
     - graph: networkx.Graph
         nx.Graph object linking the hubs (Default: None)
     """
+    _geod = Geod(ellps="WGS84")
 
     def __init__(self, hubs: list[Hub], graph: nx.Graph | None = None):
         if any([isinstance(h, Hub) == False for h in hubs]):
@@ -47,6 +49,10 @@ class Network():
         all_points = self._route_coords(hub1, hub2)
 
         return LineString(all_points)
+
+    @staticmethod
+    def haversine_m(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
+        return Network._geod.line_length([lon1, lon2], [lat1, lat2])
 
     @staticmethod
     def compute_haversine_matrix(lons: Iterable[float], lats: Iterable[float]):

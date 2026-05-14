@@ -22,7 +22,7 @@ class AirNetwork(Network):
     
     def distance_between(self, hub1: Hub, hub2: Hub):
         """Returns the distance between two airports."""
-        return Hub.haversine_m(hub1.lon, hub1.lat, hub2.lon, hub2.lat)
+        return Network.haversine_m(hub1.lon, hub1.lat, hub2.lon, hub2.lat)
     
     def build_graph(self):
         """Builds a networkx.Graph representing the network of airports."""
@@ -59,7 +59,7 @@ class AirNetwork(Network):
         Generates a list of (lon, lat) tuples representing the points
         along the shortest route between two airports.
         """
-        lonlats = Hub._geod.npts(
+        lonlats = Network._geod.npts(
             hub1.lon, hub1.lat, 
             hub2.lon, hub2.lat, 
             npts=10
