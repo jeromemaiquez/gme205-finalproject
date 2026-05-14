@@ -5,7 +5,7 @@ import networkx as nx
 
 class AirNetwork(Network):
     """
-    `Network` child classes to specifically represent networks of airports.
+    `Network` child class to specifically represent networks of airports.
     Uses the Haversine method to calculate inter-airport distances.
 
     Attributes:
@@ -27,8 +27,10 @@ class AirNetwork(Network):
     def build_graph(self):
         """Builds a networkx.Graph representing the network of airports."""
         hub_ids = [h.iata_code for h in self.hubs]
+        hub_lonlats = [(h.lon, h.lat) for h in self.hubs]
 
-        G = nx.complete_graph(hub_ids)
+        # G = nx.complete_graph(hub_ids)
+        G = nx.complete_graph(hub_lonlats)
         self.graph = G
         
     def compute_graph_distances(self):
@@ -40,9 +42,14 @@ class AirNetwork(Network):
 
         distance_matrix = Network.compute_haversine_matrix(lons, lats)
 
-        for idx1, hub1_id in enumerate(hub_ids):
-            for idx2, hub2_id in enumerate(hub_ids):
-                if hub1_id != hub2_id:
-                    distances[(hub1_id, hub2_id)] = distance_matrix[idx1, idx2]
+        # for idx1, hub1_id in enumerate(hub_ids):
+        #     for idx2, hub2_id in enumerate(hub_ids):
+        #         if hub1_id != hub2_id:
+        #             distances[(hub1_id, hub2_id)] = distance_matrix[idx1, idx2]
         
+        for idx1, hub1_lonlat in enumerate(zip(lons, lats)):
+            for idx2, hub2_lonlat in enumerate(zip(lons, lats)):
+                if hub1_lonlat != hub2_lonlat:
+                    distances[(hub1_lonlat, hub2_lonlat)] = distance_matrix[idx1, idx2]
+
         nx.set_edge_attributes(self.graph, distances, "distance_m")

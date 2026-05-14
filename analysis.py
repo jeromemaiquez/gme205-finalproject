@@ -35,38 +35,8 @@ from models.airport import Airport
 from models.seaport import Seaport
 from models.catchment import draw_isochrones, draw_hinterlands
 from models.air_network import AirNetwork
+from models.sea_network import SeaNetwork
 from models.radiation import Radiation
-
-# Test for Airport
-# airport1_data = {
-#     "name": "Ninoy Aquino International Airport",
-#     "lon": 121.0165,
-#     "lat": 14.5123,
-#     "iata_code": "MNL",
-#     "icao_code": "RPLL",
-#     "airport_type": 1
-# }
-
-# airport2_data = {
-#     "name": "Laguindingan Airport",
-#     "lon": 124.4572,
-#     "lat": 8.6125,
-#     "iata_code": "CGY",
-#     "icao_code": "RPMY",
-#     "airport_type": 2
-# }
-
-# airport1 = Airport(**airport1_data)
-# airport2 = Airport(**airport2_data)
-
-# print("\nAirport 2 details:\n---", airport2, sep="\n")
-# print(f"Distance between airports 1 and 2: {airport1.distance_to(airport2)} m")
-# print(f"Route coordinates between airports 1 and 2: {airport1._route_coords(airport2)}")
-
-# airport_route = airport1.route_linestring(airport2)
-# print(f"Geometry of route between airports 1 and 2: {airport_route}")
-
-# Test for Seaport
 
 # Import existing VisGraph for sea routes & assign to Seaport class
 # VisGraph was pre-made due to long build times (~35 minutes)
@@ -74,43 +44,19 @@ searoute_graph = vg.VisGraph()
 searoute_graph.load(fp_graph)
 Seaport.set_graph(searoute_graph)
 
-# seaport1_data = {
-#     "name": "Port of Manila",
-#     "lon": 120.9500,
-#     "lat": 14.5833,
-#     "un_locode": "PHMNL",
-#     "pmo": "NCR",
-#     "seaport_type": 1
-# }
-
-# seaport2_data = {
-#     "name": "Port of Cagayan de Oro",
-#     "lon": 124.6623,
-#     "lat": 8.4939,
-#     "un_locode": "PHCDO",
-#     "pmo": "MO/C",
-#     "seaport_type": 1
-# }
-
-# seaport1 = Seaport(**seaport1_data)
-# seaport2 = Seaport(**seaport2_data)
-
-# print("\nSeaport 2 details:\n---", seaport2, sep="\n")
-# print(f"Distance between seaports 1 and 2: {seaport1.distance_to(seaport2)} m")
-# print(f"Route coordinates between seaports 1 and 2: {seaport1._route_coords(seaport2)}")
-
-# seaport_route = seaport1.route_linestring(seaport2)
-# print(f"Geometry of route between seaports 1 and 2: {seaport_route}")
-
+# Prepare OpenRouteService API client (for isochrone generation)
 load_dotenv()
 ORS_API_KEY = os.getenv("ORS_API_KEY")
 client = ors.Client(ORS_API_KEY)
 
+# Read in data for airports and seaports
 df_airports = pd.read_csv(fp_airports)
-# df_seaports = pd.read_csv(fp_seaports)
+df_seaports = pd.read_csv(fp_seaports)
 
 airports = []
-# seaports = []
+seaports = []
+
+# Airport instantiation
 
 for idx, row in df_airports.iterrows():
     airport = Airport(
@@ -124,20 +70,7 @@ for idx, row in df_airports.iterrows():
     )
     airports.append(airport)
 
-# print(f"Airport class: {type(airports[0])}")
-print("Is an Airport a Hub?", isinstance(airports[0], Hub))
-
-# for idx, row in df_seaports.iterrows():
-#     seaport = Seaport(
-#         name=row["seaport_name"],
-#         lon=row["longitude"],
-#         lat=row["latitude"],
-#         un_locode=row["un_locode"],
-#         pmo=row["pmo"],
-#         seaport_type=row["seaport_type"],
-#         outflow=row["n_passengers"]
-#     )
-#     seaports.append(seaport)
+# Attraction calculation for airports
 
 print("Generating isochrones for list of Airport objects...")
 if not fp_isochrones.exists():
@@ -154,6 +87,8 @@ for airport in airports:
     ].values[0]
     airport.set_attraction(attraction)
  
+# AirNetwork instantiation and testing
+
 air_network = AirNetwork(airports)
 
 print(
@@ -167,13 +102,56 @@ air_network.compute_graph_distances()
 print(list(air_network.graph.nodes)[:5])
 print(list(air_network.graph.edges)[:5])
 
-# print("Generating isochrones for list of Seaport objects...")
-# if not fp_sea_isochrones.exists():
-#     gdf_seaport_catchments = draw_isochrones(client, seaports, "un_locode")
-#     gdf_seaport_catchments.to_parquet(fp_sea_isochrones)
-# else:
-#     print("Loading existing isochrone data...")
-#     gdf_seaport_catchments = gpd.read_parquet(fp_sea_isochrones)
+# Seaport instantiation
+
+for idx, row in df_seaports.iterrows():
+    seaport = Seaport(
+        name=row["seaport_name"],
+        lon=row["longitude"],
+        lat=row["latitude"],
+        un_locode=row["un_locode"],
+        pmo=row["pmo"],
+        seaport_type=row["seaport_type"],
+        outflow=row["n_passengers"]
+    )
+    seaports.append(seaport)
+
+# Add port locations to searoute graph
+seaport_points = [vg.Point(seaport.lon, seaport.lat) for seaport in seaports]
+searoute_graph.update(seaport_points)
+
+# Attraction calculation for seaports
+print("Generating isochrones for list of Seaport objects...")
+if not fp_sea_isochrones.exists():
+    gdf_seaport_catchments = draw_isochrones(client, seaports, "un_locode")
+    gdf_seaport_catchments.to_parquet(fp_sea_isochrones)
+else:
+    print("Loading existing isochrone data...")
+    gdf_seaport_catchments = gpd.read_parquet(fp_sea_isochrones)
+
+for seaport in seaports:
+    seaport_id = seaport.un_locode
+    attraction = gdf_seaport_catchments.loc[
+        gdf_seaport_catchments.hub_id == seaport_id, "total_pop"
+    ].values[0]
+    seaport.set_attraction(attraction)
+
+# SeaNetwork instantiation and testing
+
+sea_network = SeaNetwork(seaports, searoute_graph)
+
+print(
+    f"Distance between {seaports[0].un_locode} and {seaports[1].un_locode}",
+    sea_network.distance_between(seaports[0], seaports[1])
+)
+
+sea_network.build_graph()
+sea_network.compute_graph_distances()
+
+print(list(sea_network.graph.nodes)[:5])
+print(list(sea_network.graph.edges)[:5])
+
+print("Done!")
 
 # print("Generating hinterlands for list of Seaport objects...")
 # if not fp_sea_hinterlands.exists():
@@ -182,15 +160,6 @@ print(list(air_network.graph.edges)[:5])
 # else:
 #     print("Loading existing hinterland data...")
 #     gdf_seaport_catchments = gpd.read_parquet(fp_sea_hinterlands)
-
-print("Done!")
-
-# for seaport in seaports:
-#     seaport_id = seaport.un_locode
-#     attraction = gdf_seaport_catchments.loc[
-#         gdf_seaport_catchments.hub_id == seaport_id, "total_pop"
-#     ].values[0]
-#     seaport.set_attraction(attraction)
 
 # radiation_model = Radiation(seaports[:5])
 # df_sea_flows = radiation_model.simulate(id_attribute="un_locode")
