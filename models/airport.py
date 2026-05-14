@@ -47,25 +47,13 @@ class Airport(Hub):
         self.airport_type = AirportType(airport_type).name
         self.num_runways = num_runways
 
-    def distance_to(self, other: Self):
-        """
-        Computes the great-circle distance between two Airports
-        using the Haversine distance method.
-        """
-        return Hub.haversine_m(self.lon, self.lat, other.lon, other.lat)
+    def get_airport_type(self):
+        """Returns the airport class/type of an airport."""
+        return self.airport_type
     
-    def _route_coords(self, other: Self):
-        """
-        Generates a list of (lon, lat) tuples representing the points
-        along the shortest route between two airports.
-        """
-        lonlats = Hub._geod.npts(
-            self.lon, self.lat, 
-            other.lon, other.lat, 
-            npts=10
-        )
-
-        return [(self.lon, self.lat)] + lonlats + [(other.lon, other.lat)]
+    def get_hub_id(self):
+        """Returns the ID of the airport."""
+        return self.iata_code
 
     def __repr__(self):
         return (

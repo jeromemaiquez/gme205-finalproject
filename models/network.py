@@ -39,7 +39,7 @@ class Network():
         raise NotImplementedError("Must be implemented by the child classes `AirNetwork` or `SeaNetwork`.")
     
     def _route_coords(self, hub1: Hub, hub2: Hub):
-        raise NotImplementedError("Must be implemented by Airport or Seaport subclass")
+        raise NotImplementedError("Must be implemented by AirNetwork or SeaNetwork subclass")
 
     def route_linestring(self, hub1: Hub, hub2: Hub):
         """

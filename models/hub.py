@@ -63,24 +63,26 @@ class Hub:
         
         self.attraction = value
     
-    def distance_to(self, other) -> float:
-        raise NotImplementedError("Must be implemented by Airport or Seaport subclass")
-    
-    def _route_coords(self, other: Self):
-        raise NotImplementedError("Must be implemented by Airport or Seaport subclass")
-
-    def route_linestring(self, other: Self):
+    def set_outflow(self, value: int | float, override: bool = False) -> None:
         """
-        Generates a LineString geometry from the shortest path
-        between two airports (great-circle arc).
+        Assigns a value as a score signifying "outflow"
+        or "observed size" of a given hub in the radiation model.
+
+        Attributes:
+        - value: int or float
+            Value to assign as the hub's outflow/size
+        - override: bool
+            If True, overrides any existing outflow
         """
-        all_points = self._route_coords(other)
+        if self.outflow:
+            if not override:
+                raise ValueError("Hub already has an attraction score. Set `override=True` if you wish to override")
+        
+        self.outflow = value
 
-        return LineString(all_points)
-
-    @staticmethod
-    def haversine_m(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
-        return Hub._geod.line_length([lon1, lon2], [lat1, lat2])
+    def get_hub_id(self):
+        """Returns the ID of the hub."""
+        raise NotImplementedError("Must be implemented by AirNetwork or SeaNetwork subclass")
 
     def __repr__(self):
         return (

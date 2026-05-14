@@ -49,51 +49,17 @@ class Seaport(Hub):
         self.seaport_type = SeaportType(seaport_type).name
         self.num_berths = num_berths
 
-    def distance_to(self, other: Self):
-        """
-        Computes the maritime distance between two seaports,
-        measured as the shortest path along the PH coastal visibility graph.
-        """
-        if Seaport._graph is None:
-            raise RuntimeError("Maritime graph not initialized")
-        shortest = Seaport.maritime_route(self.lon, self.lat, other.lon, other.lat, Seaport._graph)
-        segment_distances = [
-            Hub.haversine_m(
-                shortest[i][0], shortest[i][1], 
-                shortest[i+1][0], shortest[i+1][1]
-            ) 
-            for i in range(len(shortest) - 1)
-        ]
-        return sum(segment_distances)
-
-    def _route_coords(self, other):
-        return Seaport.maritime_route(self.lon, self.lat, other.lon, other.lat, Seaport._graph)
-
-    @classmethod
-    def set_graph(cls, graph):
-        """
-        Initializes the visibility graph used by the class for the project.
-        """
-        cls._graph = graph
+    def get_seaport_type(self):
+        """Returns the airport class/type of an airport."""
+        return self.airport_type
     
-    @staticmethod
-    def maritime_route(lon1: float, lat1: float, lon2: float, lat2: float, graph: vg.VisGraph) -> list:
-        """
-        Generates a list of point coordinates along the shortest maritime route between two points
-        (i.e., along a visibility graph, with island polygons as obstacles to travel).
-        """
-        origin = vg.Point(lon1, lat1)
-        destination = vg.Point(lon2, lat2)
-
-        poly_o = graph.point_in_polygon(origin)
-        poly_d = graph.point_in_polygon(destination)
-
-        start = graph.closest_point(origin, poly_o) if poly_o != -1 else origin
-        end = graph.closest_point(destination, poly_d) if poly_d != -1 else destination
-
-        shortest = graph.shortest_path(start, end)
-
-        return [(point.x, point.y) for point in shortest]
+    def get_pmo(self):
+        """Returns the seaport's port management office (PMO)."""
+        return self.pmo
+    
+    def get_hub_id(self):
+        """Returns the ID of the seaport."""
+        return self.un_locode
 
     def __repr__(self):
         return (
