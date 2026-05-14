@@ -15,7 +15,7 @@ WORK_DIR = Path().resolve()
 DATA_DIR = WORK_DIR / "own_data"
 OUTPUT_DIR = WORK_DIR / "output"
 
-dir_models = WORK_DIR / "own_models"
+dir_models = WORK_DIR / "models"
 sys.path.append(os.path.abspath(dir_models))
 
 fp_airports = DATA_DIR / "GmE205_AirportData.csv"
