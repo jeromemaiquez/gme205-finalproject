@@ -18,10 +18,11 @@ class Network():
         self.graph = None
     
     def distance_between(self, hub1: Hub, hub2: Hub):
-        ...
+        # return Hub.haversine_m(hub1.lon, hub1.lat, hub2.lon, hub2.lat)
+        raise NotImplementedError("Must be implemented by the child classes `AirNetwork` or `SeaNetwork`.")
     
     def build_graph(self):
-        ...
+        raise NotImplementedError("Must be implemented by the child classes `AirNetwork` or `SeaNetwork`.")
 
     def compute_all_pairs_distances(self):
-        ...
+        raise NotImplementedError("Must be implemented by the child classes `AirNetwork` or `SeaNetwork`.")
