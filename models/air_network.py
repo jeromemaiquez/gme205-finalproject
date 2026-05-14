@@ -14,7 +14,7 @@ class AirNetwork(Network):
     - graph: networkx.Graph
         nx.Graph object linking the airports (Default: None)
     """
-    def __init__(self, hubs: list[Airport], graph: nx.Graph):
+    def __init__(self, hubs: list[Airport], graph: nx.Graph | None = None):
         if any([isinstance(h, Airport) == False for h in hubs]):
             raise ValueError("`hubs` parameter must be list of `Hub` objects or its child classes.")
         
@@ -31,7 +31,7 @@ class AirNetwork(Network):
         G = nx.complete_graph(hub_ids)
         self.graph = G
         
-    def compute_all_pairs_distances(self):
+    def compute_graph_distances(self):
         """Assigns distances as weights to the edges of the graph."""
         hub_ids = [h.iata_code for h in self.hubs]
         lats = [h.lat for h in self.hubs]

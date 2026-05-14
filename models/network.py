@@ -15,7 +15,7 @@ class Network():
         nx.Graph object linking the hubs (Default: None)
     """
 
-    def __init__(self, hubs: list[Hub], graph: nx.Graph):
+    def __init__(self, hubs: list[Hub], graph: nx.Graph | None = None):
         if any([isinstance(h, Hub) == False for h in hubs]):
             raise ValueError("`hubs` parameter must be list of `Hub` objects or its child classes.")
         

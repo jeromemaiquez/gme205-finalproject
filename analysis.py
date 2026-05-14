@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 
 WORK_DIR = Path().resolve()
-DATA_DIR = WORK_DIR / "own_data"
+DATA_DIR = WORK_DIR / "data"
 OUTPUT_DIR = WORK_DIR / "output"
 
 dir_models = WORK_DIR / "models"
@@ -30,10 +30,12 @@ fp_sea_hinterlands = OUTPUT_DIR / "PH_SeaportHinterlands.geoparquet"
 fp_output_map = OUTPUT_DIR / "test_output.html"
 fp_output_flows = OUTPUT_DIR / "PH_SeaportFlows.csv"
 
-from airport import Airport
-from seaport import Seaport
-from catchment import draw_isochrones, draw_hinterlands
-from radiation import Radiation
+from models.hub import Hub
+from models.airport import Airport
+from models.seaport import Seaport
+from models.catchment import draw_isochrones, draw_hinterlands
+from models.air_network import AirNetwork
+from models.radiation import Radiation
 
 # Test for Airport
 # airport1_data = {
@@ -104,43 +106,66 @@ load_dotenv()
 ORS_API_KEY = os.getenv("ORS_API_KEY")
 client = ors.Client(ORS_API_KEY)
 
-# df_airports = pd.read_csv(fp_airports)
-df_seaports = pd.read_csv(fp_seaports)
+df_airports = pd.read_csv(fp_airports)
+# df_seaports = pd.read_csv(fp_seaports)
 
-# airports = []
-seaports = []
+airports = []
+# seaports = []
 
-# for idx, row in df_airports.iterrows():
-#     airport = Airport(
-#         name=row["airport_name"],
-#         lon=row["longitude"],
-#         lat=row["latitude"],
-#         iata_code=row["iata_code"],
-#         icao_code=row["icao_code"],
-#         airport_type=row["airport_class"],
-#         outflow=row["n_passengers"]
-#     )
-#     airports.append(airport)
-
-for idx, row in df_seaports.iterrows():
-    seaport = Seaport(
-        name=row["seaport_name"],
+for idx, row in df_airports.iterrows():
+    airport = Airport(
+        name=row["airport_name"],
         lon=row["longitude"],
         lat=row["latitude"],
-        un_locode=row["un_locode"],
-        pmo=row["pmo"],
-        seaport_type=row["seaport_type"],
+        iata_code=row["iata_code"],
+        icao_code=row["icao_code"],
+        airport_type=row["airport_class"],
         outflow=row["n_passengers"]
     )
-    seaports.append(seaport)
+    airports.append(airport)
 
-# print("Generating isochrones for list of Airport objects...")
-# if not fp_isochrones.exists():
-#     gdf_airport_catchments = draw_isochrones(client, airports, "iata_code")
-#     gdf_airport_catchments.to_parquet(fp_isochrones)
-# else:
-#     print("Loading existing isochrone data...")
-#     gdf_airport_catchments = gpd.read_parquet(fp_isochrones)
+# print(f"Airport class: {type(airports[0])}")
+print("Is an Airport a Hub?", isinstance(airports[0], Hub))
+
+# for idx, row in df_seaports.iterrows():
+#     seaport = Seaport(
+#         name=row["seaport_name"],
+#         lon=row["longitude"],
+#         lat=row["latitude"],
+#         un_locode=row["un_locode"],
+#         pmo=row["pmo"],
+#         seaport_type=row["seaport_type"],
+#         outflow=row["n_passengers"]
+#     )
+#     seaports.append(seaport)
+
+print("Generating isochrones for list of Airport objects...")
+if not fp_isochrones.exists():
+    gdf_airport_catchments = draw_isochrones(client, airports, "iata_code")
+    gdf_airport_catchments.to_parquet(fp_isochrones)
+else:
+    print("Loading existing isochrone data...")
+    gdf_airport_catchments = gpd.read_parquet(fp_isochrones)
+
+for airport in airports:
+    airport_id = airport.iata_code
+    attraction = gdf_airport_catchments.loc[
+        gdf_airport_catchments.hub_id == airport_id, "total_pop"
+    ].values[0]
+    airport.set_attraction(attraction)
+ 
+air_network = AirNetwork(airports)
+
+print(
+    f"Distance between {airports[0].iata_code} and {airports[1].iata_code}",
+    air_network.distance_between(airports[0], airports[1])
+)
+
+air_network.build_graph()
+air_network.compute_graph_distances()
+
+print(list(air_network.graph.nodes)[:5])
+print(list(air_network.graph.edges)[:5])
 
 # print("Generating isochrones for list of Seaport objects...")
 # if not fp_sea_isochrones.exists():
@@ -150,13 +175,13 @@ for idx, row in df_seaports.iterrows():
 #     print("Loading existing isochrone data...")
 #     gdf_seaport_catchments = gpd.read_parquet(fp_sea_isochrones)
 
-print("Generating hinterlands for list of Seaport objects...")
-if not fp_sea_hinterlands.exists():
-    gdf_seaport_catchments = draw_hinterlands(fp_cost, seaports, "un_locode")
-    gdf_seaport_catchments.to_parquet(fp_sea_hinterlands)
-else:
-    print("Loading existing hinterland data...")
-    gdf_seaport_catchments = gpd.read_parquet(fp_sea_hinterlands)
+# print("Generating hinterlands for list of Seaport objects...")
+# if not fp_sea_hinterlands.exists():
+#     gdf_seaport_catchments = draw_hinterlands(fp_cost, seaports, "un_locode")
+#     gdf_seaport_catchments.to_parquet(fp_sea_hinterlands)
+# else:
+#     print("Loading existing hinterland data...")
+#     gdf_seaport_catchments = gpd.read_parquet(fp_sea_hinterlands)
 
 print("Done!")
 

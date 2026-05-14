@@ -1,4 +1,4 @@
-from hub import Hub
+from models.hub import Hub
 
 import openrouteservice as ors
 import geopandas as gpd

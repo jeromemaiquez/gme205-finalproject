@@ -1,4 +1,4 @@
-from hub import Hub
+from models.hub import Hub
 from enum import Enum
 import math
 from typing import Self
