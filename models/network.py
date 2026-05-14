@@ -1,4 +1,7 @@
 from models.hub import Hub
+import networkx as nx
+import numpy as np
+from typing import Iterable
 
 class Network():
     """
@@ -8,21 +11,47 @@ class Network():
     Attributes:
     - hubs: list[Hub]
         List of hubs to include in the network
+    - graph: networkx.Graph
+        nx.Graph object linking the hubs (Default: None)
     """
 
-    def __init__(self, hubs: list[Hub]):
+    def __init__(self, hubs: list[Hub], graph: nx.Graph):
         if any([isinstance(h, Hub) == False for h in hubs]):
             raise ValueError("`hubs` parameter must be list of `Hub` objects or its child classes.")
         
         self.hubs = hubs
-        self.graph = None
+        self.graph = graph
     
     def distance_between(self, hub1: Hub, hub2: Hub):
+        """Returns the distance between two hubs."""
         # return Hub.haversine_m(hub1.lon, hub1.lat, hub2.lon, hub2.lat)
         raise NotImplementedError("Must be implemented by the child classes `AirNetwork` or `SeaNetwork`.")
     
     def build_graph(self):
+        """Builds a networkx.Graph representing the network of hubs."""
         raise NotImplementedError("Must be implemented by the child classes `AirNetwork` or `SeaNetwork`.")
 
-    def compute_all_pairs_distances(self):
+    def compute_graph_distances(self):
+        """Assigns distances as weights to the edges of the graph."""
         raise NotImplementedError("Must be implemented by the child classes `AirNetwork` or `SeaNetwork`.")
+    
+    @staticmethod
+    def compute_haversine_matrix(lons: Iterable[float], lats: Iterable[float]):
+        """Compute a 2D distance matrix using the Haversine method."""
+        R = 6371.0
+
+        lats = np.radians(lats)
+        lons = np.radians(lons)
+
+        dlat = lats[:, np.newaxis] - lats
+        dlon = lons[:, np.newaxis] - lons
+
+        a = (
+            np.sin(dlat / 2.0) ** 2 
+            + np.cos(lats[:, np.newaxis]) 
+            * np.cos(lats) * np.sin(dlon / 2.0) ** 2
+        )
+
+        c = 2.0 * np.arcsin(np.sqrt(a))
+
+        return R * c
