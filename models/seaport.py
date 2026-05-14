@@ -1,4 +1,4 @@
-from hub import Hub
+from models.hub import Hub
 from enum import Enum
 from typing import Self
 import pyvisgraph as vg

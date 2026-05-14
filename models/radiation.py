@@ -1,4 +1,4 @@
-from hub import Hub
+from models.hub import Hub
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
