@@ -63,6 +63,9 @@ class SeaNetwork(Network):
 
         nx.set_edge_attributes(self.graph, distances, "distance_m")
 
+    def _route_coords(self, hub1: Seaport, hub2: Seaport):
+        return Seaport.maritime_route(hub1.lon, hub1.lat, hub2.lon, hub2.lat, self.vis_graph)
+
     @staticmethod
     def maritime_route(lon1: float, lat1: float, lon2: float, lat2: float, graph: vg.VisGraph) -> list:
         """

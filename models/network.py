@@ -1,6 +1,7 @@
 from models.hub import Hub
 import networkx as nx
 import numpy as np
+from shapely import LineString
 from typing import Iterable
 
 class Network():
@@ -35,6 +36,18 @@ class Network():
         """Assigns distances as weights to the edges of the graph."""
         raise NotImplementedError("Must be implemented by the child classes `AirNetwork` or `SeaNetwork`.")
     
+    def _route_coords(self, hub1: Hub, hub2: Hub):
+        raise NotImplementedError("Must be implemented by Airport or Seaport subclass")
+
+    def route_linestring(self, hub1: Hub, hub2: Hub):
+        """
+        Generates a LineString geometry from the shortest path
+        between two airports (great-circle arc).
+        """
+        all_points = self._route_coords(hub1, hub2)
+
+        return LineString(all_points)
+
     @staticmethod
     def compute_haversine_matrix(lons: Iterable[float], lats: Iterable[float]):
         """Compute a 2D distance matrix using the Haversine method."""

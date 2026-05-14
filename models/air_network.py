@@ -53,3 +53,16 @@ class AirNetwork(Network):
                     distances[(hub1_lonlat, hub2_lonlat)] = distance_matrix[idx1, idx2]
 
         nx.set_edge_attributes(self.graph, distances, "distance_m")
+    
+    def _route_coords(self, hub1: Airport, hub2: Airport):
+        """
+        Generates a list of (lon, lat) tuples representing the points
+        along the shortest route between two airports.
+        """
+        lonlats = Hub._geod.npts(
+            hub1.lon, hub1.lat, 
+            hub2.lon, hub2.lat, 
+            npts=10
+        )
+
+        return [(hub1.lon, hub1.lat)] + lonlats + [(hub2.lon, hub2.lat)]
