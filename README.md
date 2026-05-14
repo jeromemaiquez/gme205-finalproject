@@ -64,7 +64,7 @@ In the terminal, ensuring that ```(.venv)``` is present in the prompt, run the f
 - [x] Child classes of `AirNetwork` and `SeaNetwork`
     - `AirNetwork`: via Haversine distance
     - `SeaNetwork`: convert pyvisgraph.VisGraph to nx.MultiGraph --> nx.multi_source_path_length
-= [ ] `Hub`, `Airport` and `Seaport` classes to lose `distance_to()` and related methods
+= [x] `Hub`, `Airport` and `Seaport` classes to lose `distance_to()` and related methods
     - `Hub`: `assign_attraction`, `assign_population`, `get_hub_id`, etc.
     - `Airport`:  `get_hub_id` (IATA or ICAO), `get_airport_type`
     - `Seaport`: `get_hub_id` (UN/LOCODE), `get_pmo`, `get_seaport_type`
