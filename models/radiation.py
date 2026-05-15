@@ -183,3 +183,4 @@ class Radiation:
         # output_list = [[index2tileid[i], index2tileid[j], flow] for i, j, flow in all_flows if flow > 0.]
         output_list = [[i, j, flow] for i, j, flow in all_flows if flow > 0.]
         return pd.DataFrame(output_list, columns=["origin", "destination", "flow"])
+    

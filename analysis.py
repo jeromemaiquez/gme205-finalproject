@@ -42,7 +42,7 @@ from models.radiation import Radiation
 # VisGraph was pre-made due to long build times (~35 minutes)
 searoute_graph = vg.VisGraph()
 searoute_graph.load(fp_graph)
-Seaport.set_graph(searoute_graph)
+# SeaNetwork.set_graph(searoute_graph)
 
 # Prepare OpenRouteService API client (for isochrone generation)
 load_dotenv()
@@ -102,6 +102,10 @@ air_network.compute_graph_distances()
 print(list(air_network.graph.nodes)[:5])
 print(list(air_network.graph.edges)[:5])
 
+air_dest_dist = air_network.compute_single_source_distances(airports[0])
+print(f"First 5 distances to {airports[0].iata_code}")
+print({k: air_dest_dist[k] for k in list(air_dest_dist)[:5]})
+
 # Seaport instantiation
 
 for idx, row in df_seaports.iterrows():
@@ -117,8 +121,14 @@ for idx, row in df_seaports.iterrows():
     seaports.append(seaport)
 
 # Add port locations to searoute graph
-seaport_points = [vg.Point(seaport.lon, seaport.lat) for seaport in seaports]
-searoute_graph.update(seaport_points)
+# seaport_points = [vg.Point(seaport.lon, seaport.lat) for seaport in seaports]
+# points_in_poly = [searoute_graph.point_in_polygon(point) for point in seaport_points]
+# seaport_closest = [
+#     searoute_graph.closest_point(point, poly)
+#     if poly != -1 else point
+#     for point, poly in zip(seaport_points, points_in_poly)
+# ]
+# searoute_graph.update(seaport_closest)
 
 # Attraction calculation for seaports
 print("Generating isochrones for list of Seaport objects...")
@@ -150,6 +160,11 @@ sea_network.compute_graph_distances()
 
 print(list(sea_network.graph.nodes)[:5])
 print(list(sea_network.graph.edges)[:5])
+print([n for n in sea_network.graph.nodes if n.startswith("PH")][:10])
+
+sea_dest_dist = sea_network.compute_single_source_distances(seaports[0])
+print(f"First 5 distances to {seaports[0].un_locode}")
+print({k: sea_dest_dist[k] for k in list(sea_dest_dist)[:5]})
 
 print("Done!")
 

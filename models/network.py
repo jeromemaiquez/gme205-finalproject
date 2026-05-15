@@ -38,6 +38,10 @@ class Network():
         """Assigns distances as weights to the edges of the graph."""
         raise NotImplementedError("Must be implemented by the child classes `AirNetwork` or `SeaNetwork`.")
     
+    def compute_single_source_distances(self):
+        """Computes the distances from one source to all other Hub destinations in the network."""
+        raise NotImplementedError("Must be implemented by the child classes `AirNetwork` or `SeaNetwork`.")
+    
     def _route_coords(self, hub1: Hub, hub2: Hub):
         raise NotImplementedError("Must be implemented by AirNetwork or SeaNetwork subclass")
 

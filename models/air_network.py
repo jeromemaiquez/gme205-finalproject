@@ -27,10 +27,12 @@ class AirNetwork(Network):
     def build_graph(self):
         """Builds a networkx.Graph representing the network of airports."""
         hub_ids = [h.iata_code for h in self.hubs]
-        hub_lonlats = [(h.lon, h.lat) for h in self.hubs]
+        hub_lonlats = {hub.iata_code: (hub.lon, hub.lat) for hub in self.hubs}
+        # hub_lonlats = [(h.lon, h.lat) for h in self.hubs]
 
-        # G = nx.complete_graph(hub_ids)
-        G = nx.complete_graph(hub_lonlats)
+        G = nx.complete_graph(hub_ids)
+        nx.set_node_attributes(G, values=hub_lonlats, name="coords")
+        # G = nx.complete_graph(hub_lonlats)
         self.graph = G
         
     def compute_graph_distances(self):
@@ -42,18 +44,28 @@ class AirNetwork(Network):
 
         distance_matrix = Network.compute_haversine_matrix(lons, lats)
 
-        # for idx1, hub1_id in enumerate(hub_ids):
-        #     for idx2, hub2_id in enumerate(hub_ids):
-        #         if hub1_id != hub2_id:
-        #             distances[(hub1_id, hub2_id)] = distance_matrix[idx1, idx2]
+        for idx1, hub1_id in enumerate(hub_ids):
+            for idx2, hub2_id in enumerate(hub_ids):
+                if hub1_id != hub2_id:
+                    distances[(hub1_id, hub2_id)] = distance_matrix[idx1, idx2]
         
-        for idx1, hub1_lonlat in enumerate(zip(lons, lats)):
-            for idx2, hub2_lonlat in enumerate(zip(lons, lats)):
-                if hub1_lonlat != hub2_lonlat:
-                    distances[(hub1_lonlat, hub2_lonlat)] = distance_matrix[idx1, idx2]
+        # for idx1, hub1_lonlat in enumerate(zip(lons, lats)):
+        #     for idx2, hub2_lonlat in enumerate(zip(lons, lats)):
+        #         if hub1_lonlat != hub2_lonlat:
+        #             distances[(hub1_lonlat, hub2_lonlat)] = distance_matrix[idx1, idx2]
 
         nx.set_edge_attributes(self.graph, distances, "distance_m")
     
+    def compute_single_source_distances(self, source: Airport):
+        # source_coords = (source.lon, source.lat)
+
+        destinations_and_distances = nx.single_source_dijkstra_path_length(
+            self.graph,
+            source.iata_code,
+            weight="distance_m"
+        )
+        return destinations_and_distances
+
     def _route_coords(self, hub1: Airport, hub2: Airport):
         """
         Generates a list of (lon, lat) tuples representing the points
