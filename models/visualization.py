@@ -3,9 +3,14 @@ from models.air_network import AirNetwork
 from models.sea_network import SeaNetwork
 from models.hub import Hub
 import folium
+import matplotlib.pyplot as plt
 from pyproj import Geod
-from shapely import to_geojson
+from shapely import to_geojson, LineString
 import geopandas as gpd
+import pyvisgraph as vg
+import contextily as cx
+from rasterio.crs import CRS
+from pathlib import Path
 
 def route_coords(hub1: Hub, hub2: Hub):
     """
@@ -39,9 +44,9 @@ def flows_to_linestring(df_flows: gpd.GeoDataFrame, network: Network):
     )
 
     df_flows["geometry"] = df_flows.apply(
-        lambda row: network.route_linestring(
+        lambda row: LineString(
             route_coords(row["orig_hub"], row["dest_hub"])
-        )
+        ), axis=1
     )
 
     gdf_flows = gpd.GeoDataFrame(
@@ -62,7 +67,7 @@ def nodes_to_points(network: Network):
     elif isinstance(network, SeaNetwork):
             id_attribute = "un_locode"
     
-    all_nodes = [h.id_attribute for h in network.hubs]
+    all_nodes = [getattr(h, id_attribute) for h in network.hubs]
     all_lons = [h.lon for h in network.hubs]
     all_lats = [h.lat for h in network.hubs]
 
@@ -72,6 +77,21 @@ def nodes_to_points(network: Network):
           crs="EPSG:4326"
     )
 
+    gdf_nodes.columns = ["node_id", "geometry"]
+
     return gdf_nodes
+
+def plot_visgraph(vis_graph: vg.VisGraph, fp_out: str | Path):
+    """Plots the edges of a VisGraph for debugging."""
+    fig, ax = plt.subplots()
+    for edge in vis_graph.visgraph.get_edges():
+        ax.plot(
+            [edge.p1.x, edge.p2.x],
+            [edge.p1.y, edge.p2.y],
+            color="blue", alpha=0.5
+        )
+    cx.add_basemap(ax, crs=CRS.from_epsg(4326))
+
+    plt.savefig(fp_out, dpi=300)
 
 

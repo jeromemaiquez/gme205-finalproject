@@ -11,6 +11,10 @@ import os
 import json
 from pathlib import Path
 
+import pyproj
+print(pyproj.datadir.get_data_dir())
+print(os.environ.get("PROJ_LIB"))
+
 WORK_DIR = Path().resolve()
 DATA_DIR = WORK_DIR / "data"
 OUTPUT_DIR = WORK_DIR / "output"
@@ -31,6 +35,11 @@ fp_output_map = OUTPUT_DIR / "test_output.html"
 fp_output_flows_air = OUTPUT_DIR / "PH_AirportFlows.csv"
 fp_output_flows_sea = OUTPUT_DIR / "PH_SeaportFlows.csv"
 
+fp_gpkg_air = OUTPUT_DIR / "PH_AirportNodes.gpkg"
+fp_gpkg_sea = OUTPUT_DIR / "PH_SeaportNodes.gpkg"
+fp_gpkg_flows_air = OUTPUT_DIR / "PH_AirportFlows.gpkg"
+fp_gpkg_flows_sea = OUTPUT_DIR / "PH_SeaportFlows.gpkg"
+
 from models.hub import Hub
 from models.airport import Airport
 from models.seaport import Seaport
@@ -38,6 +47,7 @@ from models.catchment import draw_isochrones, draw_hinterlands
 from models.air_network import AirNetwork
 from models.sea_network import SeaNetwork
 from models.radiation import Radiation
+from models.visualization import flows_to_linestring, nodes_to_points, plot_visgraph
 
 # Import existing VisGraph for sea routes & assign to Seaport class
 # VisGraph was pre-made due to long build times (~35 minutes)
@@ -159,6 +169,10 @@ print({k: sea_dest_dist[k] for k in list(sea_dest_dist)[:5]})
 
 print("Done!")
 
+# import json
+# with open('output/sea_dest_dist.json', 'w') as f:
+#     json.dump(sea_dest_dist, f, indent=4)
+
 # print("Generating hinterlands for list of Seaport objects...")
 # if not fp_sea_hinterlands.exists():
 #     gdf_seaport_catchments = draw_hinterlands(fp_cost, seaports, "un_locode")
@@ -171,9 +185,22 @@ air_radiation = Radiation(air_network, name="Airport Radiation")
 df_air_flows = air_radiation.simulate(id_attribute="iata_code")
 df_air_flows.to_csv(fp_output_flows_air)
 
+gdf_air_flows = flows_to_linestring(df_air_flows, air_network)
+gdf_air_flows.to_file(fp_gpkg_flows_air)
+
+gdf_air_nodes = nodes_to_points(air_network)
+print(gdf_air_nodes.head())
+gdf_air_nodes.to_file(fp_gpkg_air)
+
 sea_radiation = Radiation(sea_network, name="Seaport Radiation")
 df_sea_flows = sea_radiation.simulate(id_attribute="un_locode")
 df_sea_flows.to_csv(fp_output_flows_sea)
+
+gdf_sea_flows = flows_to_linestring(df_sea_flows, sea_network)
+gdf_sea_flows.to_file(fp_gpkg_flows_sea)
+
+gdf_sea_nodes = nodes_to_points(sea_network)
+gdf_sea_nodes.to_file(fp_gpkg_sea)
 
 # print(airports[:2])
 

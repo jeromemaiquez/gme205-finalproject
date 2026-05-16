@@ -74,7 +74,7 @@ class SeaNetwork(Network):
             node_id_attr[node] = node_id
             node_coords.append((node.x, node.y))
              
-        for edge in self.vis_graph.graph.edges:
+        for edge in self.vis_graph.visgraph.get_edges():
             p1 = edge.p1
             p2 = edge.p2
 
@@ -123,6 +123,7 @@ class SeaNetwork(Network):
             source.un_locode,
             weight="distance_m"
         )
+        # print(destinations)
 
         # Filter results only to dest nodes that represent ports
         destinations_and_distances = {
