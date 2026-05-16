@@ -28,7 +28,8 @@ fp_sea_isochrones = OUTPUT_DIR / "PH_SeaportIsochrones.geoparquet"
 fp_sea_hinterlands = OUTPUT_DIR / "PH_SeaportHinterlands.geoparquet"
 
 fp_output_map = OUTPUT_DIR / "test_output.html"
-fp_output_flows = OUTPUT_DIR / "PH_SeaportFlows.csv"
+fp_output_flows_air = OUTPUT_DIR / "PH_AirportFlows.csv"
+fp_output_flows_sea = OUTPUT_DIR / "PH_SeaportFlows.csv"
 
 from models.hub import Hub
 from models.airport import Airport
@@ -120,16 +121,6 @@ for idx, row in df_seaports.iterrows():
     )
     seaports.append(seaport)
 
-# Add port locations to searoute graph
-# seaport_points = [vg.Point(seaport.lon, seaport.lat) for seaport in seaports]
-# points_in_poly = [searoute_graph.point_in_polygon(point) for point in seaport_points]
-# seaport_closest = [
-#     searoute_graph.closest_point(point, poly)
-#     if poly != -1 else point
-#     for point, poly in zip(seaport_points, points_in_poly)
-# ]
-# searoute_graph.update(seaport_closest)
-
 # Attraction calculation for seaports
 print("Generating isochrones for list of Seaport objects...")
 if not fp_sea_isochrones.exists():
@@ -176,9 +167,13 @@ print("Done!")
 #     print("Loading existing hinterland data...")
 #     gdf_seaport_catchments = gpd.read_parquet(fp_sea_hinterlands)
 
-# radiation_model = Radiation(seaports[:5])
-# df_sea_flows = radiation_model.simulate(id_attribute="un_locode")
-# df_sea_flows.to_csv(fp_output_flows)
+air_radiation = Radiation(air_network, name="Airport Radiation")
+df_air_flows = air_radiation.simulate(id_attribute="iata_code")
+df_air_flows.to_csv(fp_output_flows_air)
+
+sea_radiation = Radiation(sea_network, name="Seaport Radiation")
+df_sea_flows = sea_radiation.simulate(id_attribute="un_locode")
+df_sea_flows.to_csv(fp_output_flows_sea)
 
 # print(airports[:2])
 
