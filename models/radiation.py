@@ -175,6 +175,7 @@ class Radiation:
         return self._from_matrix_to_flowdf(all_flows, directed)
     
     def _from_matrix_to_flowdf(self, all_flows, directed: bool):
+        """Convert flow array into a pandas DataFrame."""
         output_list = [[i, j, flow] for i, j, flow in all_flows if flow > 0.]
         df_flows = pd.DataFrame(output_list, columns=["origin", "destination", "flow"])
         df_flows = df_flows[df_flows["origin"] != df_flows["destination"]]
@@ -183,5 +184,18 @@ class Radiation:
             df_flows = df_flows.groupby("od_pair").agg({"flow": "sum"}).reset_index(drop=False)
             df_flows[["origin", "destination"]] = pd.DataFrame(df_flows["od_pair"].apply(lambda x: list(x)).to_list())
             df_flows = df_flows.drop(columns=["od_pair"])[["origin", "destination", "flow"]]
-        return df_flows
+        
+        self.flows = df_flows
+        # return df_flows
+    
+    def get_pair_flow(self, hub1_id: str, hub2_id: str):
+        """Returns the flow between two hubs, denoted by their ID attribute."""
+        df_flows = self.flows
+        is_od = df_flows.apply(lambda row: set([row["origin"], row["destination"]]), axis=1) == set([hub1_id, hub2_id])
+
+        if not is_od.any:
+            raise KeyError("The hub ID pair is not found in the flow matrix.")
+
+        pair_flow = df_flows.loc[is_od, "flow"].values[0]
+        return pair_flow
     

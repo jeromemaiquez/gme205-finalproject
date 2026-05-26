@@ -12,8 +12,8 @@ import json
 from pathlib import Path
 
 import pyproj
-print(pyproj.datadir.get_data_dir())
-print(os.environ.get("PROJ_LIB"))
+# print(pyproj.datadir.get_data_dir())
+# print(os.environ.get("PROJ_LIB"))
 
 WORK_DIR = Path().resolve()
 DATA_DIR = WORK_DIR / "data"
@@ -182,7 +182,10 @@ print("Done!")
 #     gdf_seaport_catchments = gpd.read_parquet(fp_sea_hinterlands)
 
 air_radiation = Radiation(air_network, name="Airport Radiation")
-df_air_flows = air_radiation.simulate(id_attribute="iata_code")
+air_radiation.simulate(id_attribute="iata_code")
+print("Estimated air flow between MNL and CGY:", air_radiation.get_pair_flow("MNL", "CGY"))
+
+df_air_flows = air_radiation.flows
 df_air_flows.to_csv(fp_output_flows_air)
 
 gdf_air_flows = flows_to_linestring(df_air_flows, air_network)
@@ -193,7 +196,10 @@ print(gdf_air_nodes.head())
 gdf_air_nodes.to_file(fp_gpkg_air)
 
 sea_radiation = Radiation(sea_network, name="Seaport Radiation")
-df_sea_flows = sea_radiation.simulate(id_attribute="un_locode")
+sea_radiation.simulate(id_attribute="un_locode")
+print("Estimated sea flow between PHMNN and PHCGY:", sea_radiation.get_pair_flow("PHMNN", "PHCGY"))
+
+df_sea_flows = sea_radiation.flows
 df_sea_flows.to_csv(fp_output_flows_sea)
 
 gdf_sea_flows = flows_to_linestring(df_sea_flows, sea_network)
