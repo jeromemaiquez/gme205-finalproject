@@ -22,7 +22,7 @@ class Radiation:
     Thus, the average number of travelers from location :math:`i` to location :math:`j` takes the form:
 
         .. math::
-            T_{ij} - O_i \\frac{m_i}{M}\\frac{m_i m_j}{(m_i + s_{ij})(m_i + m_j + s_{ij})}.
+            T_{ij} = O_i \\frac{1}{1 - \\frac{m_i}{M}} \\frac{m_i m_j}{(m_i + s_{ij})(m_i + m_j + s_{ij})}.
 
     The destination of the :math:`O_i` trips originating in :math:`i` is sampled from a distribution
     of probabilities that a trip originating in :math:`i` ends in location :math:`j`. This probability depends on:
