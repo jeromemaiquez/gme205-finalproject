@@ -191,7 +191,7 @@ class Radiation:
     def get_pair_flow(self, hub1_id: str, hub2_id: str):
         """Returns the flow between two hubs, denoted by their ID attribute."""
         df_flows = self.flows
-        is_od = df_flows.apply(lambda row: set([row["origin"], row["destination"]]), axis=1) == set([hub1_id, hub2_id])
+        is_od = df_flows.apply(lambda row: {row["origin"], row["destination"]}, axis=1) == {hub1_id, hub2_id}
 
         if not is_od.any:
             raise KeyError("The hub ID pair is not found in the flow matrix.")
