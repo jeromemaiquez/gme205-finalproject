@@ -59,8 +59,8 @@ def flows_to_linestring(df_flows: gpd.GeoDataFrame, network: Network):
 
 def nodes_to_points(network: Network):
     """
-    Converts a pd.DataFrame of origin-destination flows into a gpd.GeoDataFrame,
-    with the route linestrings as the geometries.
+    Converts a nx.Graph of spatial nodes into a gpd.GeoDataFrame,
+    with the node coordinates as point geometries.
     """
     if isinstance(network, AirNetwork):
             id_attribute = "iata_code"
